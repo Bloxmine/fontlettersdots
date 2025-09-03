@@ -1,4 +1,6 @@
-// every letter as a 5x3 grid of pixels, every letter is an array
+// Description: This object contains the pixel representation of each letter in a 5x3 grid.
+// Authors: Hein Dijstelbloem, Christ Kastelijn
+// Date: 2025-09-03
 const letters = {
     "A": [
         [1,1,0],
@@ -72,7 +74,7 @@ const letters = {
     ],
     "K": [
         [1,0,1],
-        [1,0,0],
+        [1,0,1],
         [1,1,0],
         [1,1,1],
         [1,0,1],
@@ -244,6 +246,13 @@ const letters = {
         [0,1,0],
         [1,0,0],
         [1,0,0],
+    ],
+    "Ĳ": [
+        [1,0,1],
+        [1,0,1],
+        [1,0,1],
+        [0,0,1],
+        [1,1,0],
     ],
     "QUOTATION": [
         [1,0,1],
@@ -573,7 +582,120 @@ const letters = {
         [0,1,0],
         [0,1,0],
         [1,1,0]
+    ],
+    " ": [
+        [0,0,0],
+        [0,0,0],
+        [0,0,0],
+        [0,0,0],
+        [0,0,0]
+    ],
+    "‼": [
+        [1,0,1],
+        [1,0,1],
+        [1,0,1],
+        [0,0,0],
+        [1,0,1]
     ]
+
 };
 
-// render the letters to a canvas
+    // dot display is 84x28
+    const DOTS_X = 82;
+    const DOTS_Y = 28;
+    const DOT_SIZE = 10;
+    const canvas = document.getElementById('flipdotCanvas');
+    canvas.width = DOTS_X * DOT_SIZE;
+    canvas.height = DOTS_Y * DOT_SIZE;
+    const ctx = canvas.getContext('2d');
+
+    // dot size and padding
+    const dotSize = DOT_SIZE;
+    const padding = 0;
+
+    // letter renderer
+    function renderLetter(letter, gridX, gridY) {
+        const letterData = letters[letter];
+        if (!letterData) return;
+
+        for (let y = 0; y < letterData.length; y++) {
+            for (let x = 0; x < letterData[y].length; x++) {
+                const dot = letterData[y][x];
+                const px = (gridX + x) * dotSize;
+                const py = (gridY + y) * dotSize;
+                ctx.beginPath();
+                ctx.arc(
+                    px + dotSize / 2,
+                    py + dotSize / 2,
+                    dotSize / 2,
+                    0,
+                    Math.PI * 2
+                );
+                if (dot) {
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'white';
+                    ctx.fillStyle = 'white';
+                } else {
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+                    ctx.fillStyle = '#333';
+                }
+                ctx.fill();
+                // Reset shadow after drawing
+                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'transparent';
+            }
+        }
+    }
+
+    // handle user input
+    document.getElementById('renderButton').addEventListener('click', () => {
+        const text = document.getElementById('textInput').value;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // draw all dots as deactivated (dark grey)
+        for (let y = 0; y < DOTS_Y; y++) {
+            for (let x = 0; x < DOTS_X; x++) {
+                const px = x * dotSize;
+                const py = y * dotSize;
+                ctx.beginPath();
+                ctx.arc(
+                    px + dotSize / 2,
+                    py + dotSize / 2,
+                    dotSize / 2,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fillStyle = '#333';
+                ctx.fill();
+            }
+        }
+
+        // each letter is 3 dots wide, 5 dots tall, 1 dot gap between letters
+        const letterWidth = 3;
+        const letterHeight = 5;
+        const gap = 1;
+        const lines = 4;
+        const charsPerLine = Math.floor((DOTS_X + gap) / (letterWidth + gap));
+        const lineHeight = letterHeight + 1; // 1 dot gap between lines
+
+        // split text into lines
+        let textLines = [];
+        for (let i = 0; i < lines; i++) {
+            textLines.push(text.substr(i * charsPerLine, charsPerLine));
+        }
+
+        for (let line = 0; line < lines; line++) {
+            let gridX = 0;
+            let gridY = line * lineHeight;
+            const lineText = textLines[line];
+            for (let i = 0; i < lineText.length; i++) {
+                const letter = lineText[i].toUpperCase();
+                const letterData = letters[letter];
+                if (letterData && gridX + letterWidth <= DOTS_X) {
+                    renderLetter(letter, gridX, gridY);
+                    gridX += letterWidth + gap;
+                }
+            }
+        }
+    });
