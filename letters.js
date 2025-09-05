@@ -1,4 +1,4 @@
-// Description: This object contains the pixel representation of each letter in a 5x3 grid.
+// Description: This file contains the pixel representation of each letter in a 5x3 grid.
 // Authors: Hein Dijstelbloem, Christ Kastelijn
 // Date: 2025-09-03
 const letters = {
@@ -70,7 +70,7 @@ const letters = {
         [0,0,1],
         [1,0,1],
         [1,0,1],
-        [0,1,0],
+        [0,1,1],
     ],
     "K": [
         [1,0,1],
@@ -353,7 +353,7 @@ const letters = {
         [1,1,1]
     ],
     "6": [
-        [0,1,1],
+        [1,1,1],
         [1,0,0],
         [1,1,1],
         [1,0,1],
@@ -464,7 +464,7 @@ const letters = {
         [0,0,0],
         [1,0,1]
     ],
-    "★": [
+    "*": [
         [0,0,0],
         [0,1,0],
         [1,1,1],
@@ -597,7 +597,6 @@ const letters = {
         [0,0,0],
         [1,0,1]
     ]
-
 };
 
     // dot display is 84x28

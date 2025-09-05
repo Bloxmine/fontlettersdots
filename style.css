@@ -1,8 +1,11 @@
+/* helllllllll yeahhhhhhhhhh */
 :root {
     --canvas-width: 820px;
     --canvas-height: 280px;
     --dot-size: 10px;
     --dot-color: #575757;
+    --color-primary: #ffffff;
+    --color-secondary: #000000;
     --render-button-gradient: linear-gradient(to bottom, #575757, #434343);
     --background-gradient: linear-gradient(to bottom, #000000, #466680);
     --quiz-background: #ffffff;
@@ -26,6 +29,7 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    color: var(--color-primary);
 }
 
 canvas {
@@ -33,10 +37,11 @@ canvas {
     image-rendering: crisp-edges;
     width: 820px;
     height: 280px;
-    background-color: #000000;
+    background-color: var(--color-secondary);
     display: block;
     margin: 20px auto;
-    border: 10px solid #000000;
+    border: 10px solid var(--color-primary);
+    border-radius: 10px;
 }
 #inputBox {
     display: flex;
@@ -44,18 +49,140 @@ canvas {
     align-items: center;
     margin: 20px 0;
 }
+#textInput {
+    all: unset;
+    border: 2px solid var(--color-primary);
+    border-radius: 50px;
+    padding: 10px;
+    font-size: 18px;
+    font-family: sans-serif;
+    font-weight: bold;
+    color: var(--color-primary);
+    width: 300px;
+}
+/* adapted from other code, credits below */
+button, #renderButton, #demoSelection button {
+  all: unset;
+  display: inline-block;
+  position: relative;
+  background-color: #19F;
+  background-image: linear-gradient(
+    hsla(0, 0%, 100%, 0.6), hsla(0, 0%, 100%, 0) 50%,
+    hsla(0, 0%, 0%, 0.3) 50%, hsla(0, 0%, 100%, 0.2)
+  );
+  font-size: 28px;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: white;
+  padding: 16px 32px;
+  text-shadow:
+    0 0 15px hsla(0, 0%, 100%, 1),
+    0 2px 4px hsla(0, 0%, 0%, 0.7);
+  border: none;
+  border-radius: 50px;
+  margin: 10px;
+  box-shadow:
+    inset 0 -5px 20px hsla(0, 0%, 0%, 0.4),
+    inset 0 5px 20px hsla(0, 0%, 100%, 0.4),
+    -8px 8px 5px hsla(0, 0%, 0%, 0.15),
+    5px 18px 10px hsla(0, 0%, 0%, 0.2);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
 
-#renderButton {
-    background: var(--render-button-gradient);
-    border: 1px solid #ffffff;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 38px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 10px;
+button:before, #renderButton:before, #demoSelection button:before {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 5px;
+  height: 30px;
+  border-radius: 15px;
+  background: linear-gradient(
+    hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0)
+  );
+}
+
+button:hover, #renderButton:hover, #demoSelection button:hover {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 -5px 20px hsla(0, 0%, 0%, 0.4),
+    inset 0 5px 20px hsla(0, 0%, 100%, 0.4),
+    -12px 12px 5px hsla(0, 0%, 0%, 0.15),
+    10px 25px 10px hsla(0, 0%, 0%, 0.2);
+}
+@keyframes inOut {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+#demoSelection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+/*  Description: Glossy button styles
+    Author: Dave DeSandro
+    URL: https://codepen.io/desandro/pen/KqQbaq */
+
+.glossy-button {
+  display: inline-block;
+  position: relative;
+  background-color: #AAA;
+  background-image: linear-gradient( /* chrome */
+    hsla(0, 0%, 100%, 0.6), hsla(0, 0%, 100%, 0) 50%,
+    hsla(0, 0%, 0%, 0.3) 50%, hsla(0, 0%, 100%, 0.2)
+  );
+  font-size: 22px;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: white;
+  padding: 20px 40px;
+  text-shadow:
+    0 0 15px hsla(0, 0%, 100%, 1), /* bloom */
+    0 2px 4px hsla(0, 0%, 0%, 0.7); /* drop shadow */
+  border: none;
+  border-radius: 50px;
+  margin: 10px;
+  box-shadow:
+    inset 0 -5px 20px hsla(0, 0%, 0%, 0.4), /* top light */
+    inset 0 5px 20px hsla(0, 0%, 100%, 0.4), /* bottom shadow */
+    /* multiple light sources yall */
+    -8px 8px 5px hsla(0, 0%, 0%, 0.15), /* drop shadow 1 */
+    5px 18px 10px hsla(0, 0%, 0%, 0.2); /* drop shadow 2 */
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* highlight */
+.glossy-button:before {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 5px;
+  height: 30px;
+  border-radius: 15px;
+  background: linear-gradient(
+    hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0) );
+}
+
+.glossy-button--blue { background-color: #19F; }
+.glossy-button--blue { background-color: #19F !important; }
+.glossy-button--gold { background-color: #EA0 !important; }
+.glossy-button--green { background-color: #6C6 !important; }
+.glossy-button--red { background-color: #E21 !important; }
+
+.glossy-button:hover {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 -5px 20px hsla(0, 0%, 0%, 0.4), /* top light */
+    inset 0 5px 20px hsla(0, 0%, 100%, 0.4), /* bottom shadow */
+    /* multiple light sources yall */
+    -12px 12px 5px hsla(0, 0%, 0%, 0.15), /* drop shadow 1 */
+    10px 25px 10px hsla(0, 0%, 0%, 0.2); /* drop shadow 2 */
 }

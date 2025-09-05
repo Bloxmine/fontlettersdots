@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip-Dot Clock Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dot-size: 10px;
+            --dot-gap: 2px;
+            --display-width: 84;
+            --display-height: 28;
+            --dot-off-color: #2a2a2a;
+            --dot-on-color: #f3ca20;
+            --bg-color: #1a1a1a;
+            --display-bg: #050505;
+            --border-color: #333;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* The main container for the flip-dot grid */
+        #display {
+            display: grid;
+            grid-template-columns: repeat(var(--display-width), var(--dot-size));
+            grid-template-rows: repeat(var(--display-height), var(--dot-size));
+            gap: var(--dot-gap);
+            background-color: var(--display-bg);
+            padding: 15px;
+            border: 5px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Individual dot styling */
+        .dot {
+            width: var(--dot-size);
+            height: var(--dot-size);
+            background-color: var(--dot-off-color);
+            border-radius: 50%;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* "On" state for a dot */
+        .dot.on {
+            background-color: var(--dot-on-color);
+            box-shadow: 0 0 5px var(--dot-on-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- The grid of dots will be generated here by JavaScript -->
+    <div id="display"></div>
+
+    <script>
+        // --- Configuration ---
+        const DISPLAY_WIDTH = 84;
+        const DISPLAY_HEIGHT = 28;
+        const FPS = 15; // Target frames per second
+
+        // Ensure CSS variables match JavaScript constants
+        document.documentElement.style.setProperty('--display-width', DISPLAY_WIDTH);
+        document.documentElement.style.setProperty('--display-height', DISPLAY_HEIGHT);
+
+        // --- Global Variables ---
+        const display = document.getElementById('display');
+        const dots = []; // Holds references to all dot DOM elements for quick access
+        
+        // Software buffers to manage the state of each dot
+        // This prevents unnecessary DOM updates if a dot's state hasn't changed
+        const currentFrameBuffer = new Array(DISPLAY_WIDTH * DISPLAY_HEIGHT).fill(0);
+        const previousFrameBuffer = new Array(DISPLAY_WIDTH * DISPLAY_HEIGHT).fill(-1); // -1 forces initial render
+
+        // --- Initialization ---
+        // Create the grid of dots and populate the `dots` array
+        function initializeDisplay() {
+            for (let i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                display.appendChild(dot);
+                dots.push(dot);
+            }
+        }
+
+        // --- Drawing API ---
+
+        /**
+         * Clears the frame buffer, setting all dots to the "off" state (0).
+         */
+        function clearFrameBuffer() {
+            for (let i = 0; i < currentFrameBuffer.length; i++) {
+                currentFrameBuffer[i] = 0;
+            }
+        }
+
+        /**
+         * Sets a single pixel in the frame buffer to "on".
+         * @param {number} x - The x-coordinate.
+         * @param {number} y - The y-coordinate.
+         */
+        function setPixel(x, y) {
+            const roundedX = Math.round(x);
+            const roundedY = Math.round(y);
+            // Check bounds to avoid errors
+            if (roundedX >= 0 && roundedX < DISPLAY_WIDTH && roundedY >= 0 && roundedY < DISPLAY_HEIGHT) {
+                currentFrameBuffer[roundedY * DISPLAY_WIDTH + roundedX] = 1;
+            }
+        }
+
+        /**
+         * Draws a line between two points using Bresenham's line algorithm.
+         * @param {number} x1 - Start x-coordinate.
+         * @param {number} y1 - Start y-coordinate.
+         * @param {number} x2 - End x-coordinate.
+         * @param {number} y2 - End y-coordinate.
+         */
+        function drawLine(x1, y1, x2, y2) {
+            let dx = Math.abs(x2 - x1);
+            let dy = -Math.abs(y2 - y1);
+            let sx = x1 < x2 ? 1 : -1;
+            let sy = y1 < y2 ? 1 : -1;
+            let err = dx + dy;
+
+            while (true) {
+                setPixel(x1, y1);
+                if (x1 === x2 && y1 === y2) break;
+                let e2 = 2 * err;
+                if (e2 >= dy) {
+                    err += dy;
+                    x1 += sx;
+                }
+                if (e2 <= dx) {
+                    err += dx;
+                    y1 += sy;
+                }
+            }
+        }
+        
+        // --- Clock Logic ---
+        function updateClock() {
+            clearFrameBuffer();
+
+            const centerX = DISPLAY_WIDTH / 2;
+            const centerY = DISPLAY_HEIGHT / 2;
+            // Radius is limited by the shortest dimension of the display
+            const radius = Math.min(DISPLAY_WIDTH, DISPLAY_HEIGHT) / 2 - 2;
+            
+            // Draw a center dot to make the clock center visible
+            setPixel(centerX, centerY);
+            const centerX = DISPLAY_WIDTH / 2;
+            const centerY = DISPLAY_HEIGHT / 2;
+            // Radius is limited by the shortest dimension of the display
+            const radius = (DISPLAY_HEIGHT / 2) - 2;
+
+            const now = new Date();
+            // Use fractional time for smoother animation between frames
+            const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+            const minutes = now.getMinutes() + seconds / 60;
+            const hours = (now.getHours() % 12) + minutes / 60;
+
+            // 1. Draw Hour Markers
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * 2 * Math.PI;
+                // Make markers at 12, 3, 6, 9 slightly longer
+                const isMajorHour = i % 3 === 0;
+                const markerLength = isMajorHour ? 2 : 1;
+                
+                const x1 = centerX + (radius - markerLength) * Math.cos(angle);
+                const y1 = centerY + (radius - markerLength) * Math.sin(angle);
+                const x2 = centerX + radius * Math.cos(angle);
+                const y2 = centerY + radius * Math.sin(angle);
+                drawLine(x1, y1, x2, y2);
+            }
+
+            // 2. Draw Hour Hand (shortest)
+            const hourHandLength = radius * 0.5;
+            // Subtract PI/2 to orient 0 degrees to the top of the clock
+            const hourAngle = (hours / 12) * 2 * Math.PI - Math.PI / 2;
+            const hourX = centerX + hourHandLength * Math.cos(hourAngle);
+            const hourY = centerY + hourHandLength * Math.sin(hourAngle);
+            drawLine(centerX, centerY, hourX, hourY);
+
+            // 3. Draw Minute Hand (medium)
+            const minuteHandLength = radius * 0.8;
+            const minuteAngle = (minutes / 60) * 2 * Math.PI - Math.PI / 2;
+            const minuteX = centerX + minuteHandLength * Math.cos(minuteAngle);
+            const minuteY = centerY + minuteHandLength * Math.sin(minuteAngle);
+            drawLine(centerX, centerY, minuteX, minuteY);
+
+            // 4. Draw Second Hand (longest)
+            const secondHandLength = radius * 0.9;
+            const secondAngle = (seconds / 60) * 2 * Math.PI - Math.PI / 2;
+            const secondX = centerX + secondHandLength * Math.cos(secondAngle);
+            const secondY = centerY + secondHandLength * Math.sin(secondAngle);
+            drawLine(centerX, centerY, secondX, secondY);
+        }
+        
+        // --- Rendering Engine ---
+        
+        /**
+         * Compares the current frame buffer to the previous one and updates only the dots
+         * that have changed their state. This is more efficient than re-rendering everything.
+         */
+        function render() {
+            for (let i = 0; i < currentFrameBuffer.length; i++) {
+                if (currentFrameBuffer[i] !== previousFrameBuffer[i]) {
+                    if (currentFrameBuffer[i] === 1) {
+                        dots[i].classList.add('on');
+                    } else {
+                        dots[i].classList.remove('on');
+                    }
+                    previousFrameBuffer[i] = currentFrameBuffer[i];
+                }
+            }
+        }
+        
+        // --- Main Loop ---
+        
+        /**
+         * The main loop that runs at the target FPS.
+         */
+        function mainLoop() {
+            updateClock();
+            render();
+        }
+
+        // Start the simulation
+        initializeDisplay();
+        setInterval(mainLoop, 1000 / FPS);
+    </script>
+</body>
+</html>

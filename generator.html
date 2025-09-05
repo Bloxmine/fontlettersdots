@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Character Creator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #2d3748;
+            --card-bg: white;
+            --border-color: #e2e8f0;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #4b5563;
+            --secondary-hover: #374151;
+            --blue-color: #2563eb;
+            --blue-hover: #1d4ed8;
+            --green-color: #16a34a;
+            --green-hover: #15803d;
+            --gray-color: #e5e7eb;
+            --gray-hover: #d1d5db;
+            --header-color: #111827;
+            --code-bg: #111827;
+            --code-text: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--header-color);
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.125rem;
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+        }
+
+        .controls-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: fit-content;
+        }
+
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-control label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-sizing: border-box;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+        }
+        .form-input:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+        }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-blue { background-color: var(--blue-color); color: white; }
+        .btn-blue:hover { background-color: var(--blue-hover); }
+        .btn-secondary { background-color: var(--secondary-color); color: white; }
+        .btn-secondary:hover { background-color: var(--secondary-hover); }
+        .btn-green { background-color: var(--green-color); color: white; }
+        .btn-green:hover { background-color: var(--green-hover); }
+        .btn-gray { background-color: var(--gray-color); color: #374151; }
+        .btn-gray:hover { background-color: var(--gray-hover); }
+        
+
+        .pixel-grid-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pixel-grid {
+            display: grid;
+            border: 1px solid #d1d5db;
+            gap: 1px;
+            background-color: #d1d5db;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .pixel {
+            width: 25px;
+            height: 25px;
+            background-color: white;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        .pixel.active {
+            background-color: #1f2937;
+        }
+
+        .saved-characters-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            min-height: 2rem;
+        }
+        .saved-char-item {
+            display: flex;
+            align-items: center;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .saved-char-item:hover {
+            background-color: #d1d5db;
+        }
+        .saved-char-load-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #1f2937;
+            padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+        }
+        .saved-char-delete-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #9ca3af;
+            font-weight: bold;
+            padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+            line-height: 1;
+            transition: color 0.2s ease-in-out;
+            font-size: 1rem;
+        }
+        .saved-char-delete-btn:hover {
+            color: #ef4444; /* red */
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .output-header h2 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+        .output-header .btn-group { display: flex; gap: 0.5rem; }
+        .output-header .btn-group .btn { width: auto; font-size: 0.875rem; }
+
+        .code-block {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            height: 70vh;
+        }
+
+        #output-code {
+            font-family: 'Roboto Mono', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Notification Modal */
+        .notification-modal-backdrop {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .notification-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        #notification-message { margin-bottom: 1rem; color: #111827; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Pixel Character Creator</h1>
+            <p>Draw your characters, define the grid, and export the code.</p>
+        </header>
+
+        <div class="main-layout">
+            <div class="card controls-card">
+                <h2 class="card-header">Controls</h2>
+                
+                <div class="form-group">
+                    <div class="form-control">
+                        <label for="gridWidth">Width</label>
+                        <input type="number" id="gridWidth" value="5" min="1" max="50" class="form-input">
+                    </div>
+                    <div class="form-control">
+                        <label for="gridHeight">Height</label>
+                        <input type="number" id="gridHeight" value="7" min="1" max="50" class="form-input">
+                    </div>
+                </div>
+                <button id="setGridBtn" class="btn btn-primary">Set Grid</button>
+
+                <div class="pixel-grid-wrapper">
+                    <div id="grid-container" class="pixel-grid"></div>
+                </div>
+
+                <div class="form-control">
+                    <label for="characterName">Character Name</label>
+                    <input type="text" id="characterName" placeholder="e.g., A, B, smile" maxlength="15" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <button id="saveCharBtn" class="btn btn-blue">Save Character</button>
+                    <button id="clearGridBtn" class="btn btn-secondary">Clear Grid</button>
+                </div>
+
+                <div>
+                    <h3 class="card-header" style="font-size: 1.25rem; margin-bottom: 0.75rem;">Saved Characters</h3>
+                    <div id="saved-characters-list" class="saved-characters-list">
+                        <p style="color: #6b7280; font-size: 0.875rem;">No characters saved yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="output-header">
+                    <h2>Generated Code</h2>
+                    <div class="btn-group">
+                        <button id="copyBtn" class="btn btn-gray">Copy Code</button>
+                        <button id="downloadBtn" class="btn btn-green">Download .js</button>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <pre id="output-code">const characters = {};</pre>
+                </div>
+                <textarea id="copy-helper" style="position: absolute; left: -9999px;"></textarea>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="notification-modal-backdrop" style="display: none;">
+        <div class="notification-modal-content">
+            <p id="notification-message"></p>
+            <button id="notification-close-btn" class="btn btn-secondary">Close</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const gridWidthInput = document.getElementById('gridWidth');
+            const gridHeightInput = document.getElementById('gridHeight');
+            const setGridBtn = document.getElementById('setGridBtn');
+            const gridContainer = document.getElementById('grid-container');
+            const characterNameInput = document.getElementById('characterName');
+            const saveCharBtn = document.getElementById('saveCharBtn');
+            const clearGridBtn = document.getElementById('clearGridBtn');
+            const savedCharactersList = document.getElementById('saved-characters-list');
+            const outputCode = document.getElementById('output-code');
+            const copyBtn = document.getElementById('copyBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyHelper = document.getElementById('copy-helper');
+            const notificationModal = document.getElementById('notification-modal');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationCloseBtn = document.getElementById('notification-close-btn');
+
+            // App State
+            let characters = {};
+            let currentGridData = [];
+            let gridWidth = 5;
+            let gridHeight = 7;
+            let isMouseDown = false;
+            let drawMode = null; // can be 'draw' or 'erase'
+
+            // --- Modal Functions ---
+            function showNotification(message) {
+                notificationMessage.textContent = message;
+                notificationModal.style.display = 'flex';
+            }
+
+            notificationCloseBtn.addEventListener('click', () => {
+                notificationModal.style.display = 'none';
+            });
+            
+            // --- Core Functions ---
+            function createGrid() {
+                gridWidth = parseInt(gridWidthInput.value, 10) || 5;
+                gridHeight = parseInt(gridHeightInput.value, 10) || 7;
+                
+                gridContainer.innerHTML = '';
+                gridContainer.style.gridTemplateColumns = `repeat(${gridWidth}, 1fr)`;
+                
+                currentGridData = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
+
+                for (let r = 0; r < gridHeight; r++) {
+                    for (let c = 0; c < gridWidth; c++) {
+                        const pixel = document.createElement('div');
+                        pixel.classList.add('pixel');
+                        pixel.dataset.row = r;
+                        pixel.dataset.col = c;
+                        gridContainer.appendChild(pixel);
+                    }
+                }
+            }
+            
+            function setPixelState(pixel, activate) {
+                if (!pixel || !pixel.dataset.row) return;
+                const row = parseInt(pixel.dataset.row, 10);
+                const col = parseInt(pixel.dataset.col, 10);
+                
+                const alreadyActive = currentGridData[row][col] === 1;
+
+                if (activate && !alreadyActive) {
+                    currentGridData[row][col] = 1;
+                    pixel.classList.add('active');
+                } else if (!activate && alreadyActive) {
+                    currentGridData[row][col] = 0;
+                    pixel.classList.remove('active');
+                }
+            }
+
+            function saveCharacter() {
+                const name = characterNameInput.value.trim();
+                if (!name) {
+                    showNotification('Please enter a character name.');
+                    return;
+                }
+                
+                characters[name] = JSON.parse(JSON.stringify(currentGridData));
+                updateSavedCharactersList();
+                updateOutputCode();
+                characterNameInput.value = '';
+            }
+
+            function loadCharacter(name) {
+                const charData = characters[name];
+                if (!charData) return;
+
+                const charHeight = charData.length;
+                const charWidth = charData[0] ? charData[0].length : 0;
+                
+                gridHeightInput.value = charHeight;
+                gridWidthInput.value = charWidth;
+                characterNameInput.value = name;
+
+                createGrid();
+
+                currentGridData = JSON.parse(JSON.stringify(charData));
+                const pixels = gridContainer.querySelectorAll('.pixel');
+                pixels.forEach(pixel => {
+                    const r = parseInt(pixel.dataset.row, 10);
+                    const c = parseInt(pixel.dataset.col, 10);
+                    if (currentGridData[r][c] === 1) {
+                        pixel.classList.add('active');
+                    } else {
+                        pixel.classList.remove('active');
+                    }
+                });
+            }
+
+            function deleteCharacter(name) {
+                if (characters[name]) {
+                    // If the character being deleted is currently loaded, clear the editor
+                    if (characterNameInput.value === name) {
+                        characterNameInput.value = '';
+                        clearGridBtn.click(); // This will trigger createGrid() and reset
+                    }
+                    
+                    delete characters[name]; // Remove from data object
+                    
+                    updateSavedCharactersList(); // Refresh UI list
+                    updateOutputCode(); // Refresh code output
+                }
+            }
+
+            // --- UI Update Functions ---
+            function updateSavedCharactersList() {
+                savedCharactersList.innerHTML = '';
+                const charNames = Object.keys(characters);
+
+                if (charNames.length === 0) {
+                     savedCharactersList.innerHTML = '<p style="color: #6b7280; font-size: 0.875rem;">No characters saved yet.</p>';
+                     return;
+                }
+                
+                charNames.sort().forEach(name => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('saved-char-item');
+
+                    const loadButton = document.createElement('button');
+                    loadButton.textContent = name;
+                    loadButton.classList.add('saved-char-load-btn');
+                    loadButton.title = `Edit ${name}`;
+                    loadButton.addEventListener('click', () => loadCharacter(name));
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerHTML = '&times;';
+                    deleteButton.classList.add('saved-char-delete-btn');
+                    deleteButton.title = `Delete ${name}`;
+                    deleteButton.addEventListener('click', () => deleteCharacter(name));
+
+                    itemContainer.appendChild(loadButton);
+                    itemContainer.appendChild(deleteButton);
+                    savedCharactersList.appendChild(itemContainer);
+                });
+            }
+
+            function updateOutputCode() {
+                let codeString = 'const characters = {\n';
+                const charNames = Object.keys(characters);
+
+                charNames.forEach((name, index) => {
+                    codeString += `    "${name}": [\n`;
+                    const charData = characters[name];
+                    charData.forEach((row, rowIndex) => {
+                        codeString += `        [${row.join(',')}],${rowIndex === charData.length - 1 ? '' : ''}\n`;
+                    });
+                    codeString += `    ]${index === charNames.length - 1 ? '' : ','}\n`;
+                });
+
+                codeString += '};';
+                outputCode.textContent = codeString;
+            }
+
+            // --- Utility Functions ---
+            function copyCode() {
+                const textToCopy = outputCode.textContent;
+                copyHelper.value = textToCopy;
+                copyHelper.select();
+                try {
+                    document.execCommand('copy');
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => { copyBtn.textContent = 'Copy Code'; }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    showNotification('Could not copy code. Please select and copy manually.');
+                }
+            }
+
+            function downloadFile() {
+                const textToSave = outputCode.textContent;
+                const blob = new Blob([textToSave], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'characters.js';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            // --- Event Listeners ---
+            setGridBtn.addEventListener('click', createGrid);
+            saveCharBtn.addEventListener('click', saveCharacter);
+            clearGridBtn.addEventListener('click', createGrid);
+            copyBtn.addEventListener('click', copyCode);
+            downloadBtn.addEventListener('click', downloadFile);
+
+            // Drawing Event Listeners
+            gridContainer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (!e.target.classList.contains('pixel')) return;
+                
+                isMouseDown = true;
+                const pixel = e.target;
+                const row = parseInt(pixel.dataset.row, 10);
+                const col = parseInt(pixel.dataset.col, 10);
+
+                drawMode = (currentGridData[row][col] === 0) ? 'draw' : 'erase';
+                
+                if (drawMode === 'draw') {
+                    setPixelState(pixel, true);
+                } else {
+                    setPixelState(pixel, false);
+                }
+            });
+
+            gridContainer.addEventListener('mouseover', (e) => {
+                if (!isMouseDown || !e.target.classList.contains('pixel')) return;
+                
+                const pixel = e.target;
+                if (drawMode === 'draw') {
+                    setPixelState(pixel, true);
+                } else if (drawMode === 'erase') {
+                    setPixelState(pixel, false);
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                isMouseDown = false;
+                drawMode = null;
+            });
+            
+            // --- Initial Setup ---
+            createGrid();
+        });
+    </script>
+</body>
+</html>
+
+

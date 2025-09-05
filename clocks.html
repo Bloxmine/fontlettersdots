@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Dot Clock</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- The canvas element where the clock will be rendered -->
+    <canvas id="clockCanvas" width="840" height="280"></canvas>
+    <div id="demoSelection">
+    <button id="demoButton" class="glossy-button button-purple not-active">Flipoot</button>
+    <button id="demo2Button" class="glossy-button button-green active">Clock</button>
+    <button id="demo3Button" class="glossy-button button-gold not-active" onclick="window.location.href='letters.html';">Animated letters</button>
+    </div>
+</body>
+<script>
+    // The original clock face pixel data. 1 represents a dot, 0 is empty space.
+    const graphics = {
+    "clockFace": [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    ]
+};
+
+    const canvas = document.getElementById('clockCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- Configuration ---
+    const GRID_WIDTH = 84;
+    const GRID_HEIGHT = 28;
+    const PIXEL_SIZE = canvas.width / GRID_WIDTH; // Should be 10
+    const DOT_RADIUS = PIXEL_SIZE * 0.45; // 4.5, for a nice gap between dots
+    const DOT_COLOR = '#e0e0e0';
+
+    // Center of the clock grid
+    const CENTER_X = 41.5;
+    const CENTER_Y = 13.5;
+
+    // Length of the clock hands in grid units
+    const HOUR_HAND_LENGTH = 7;
+    const MINUTE_HAND_LENGTH = 10;
+    const SECOND_HAND_LENGTH = 12;
+
+    /**
+     * Draws a line on the provided grid data array.
+     * Uses a simple linear interpolation method to plot points.
+     * @param {number[][]} grid - The 2D array representing the pixel grid.
+     * @param {number} x1 - Starting x-coordinate.
+     * @param {number} y1 - Starting y-coordinate.
+     * @param {number} x2 - Ending x-coordinate.
+     * @param {number} y2 - Ending y-coordinate.
+     * @param {boolean} isThick - If true, the line will be drawn thicker.
+     */
+    function drawLineOnGrid(grid, x1, y1, x2, y2, isThick) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const steps = Math.max(Math.abs(dx), Math.abs(dy));
+        const xInc = dx / steps;
+        const yInc = dy / steps;
+
+        let currentX = x1;
+        let currentY = y1;
+
+        for (let i = 0; i <= steps; i++) {
+            const gridX = Math.round(currentX);
+            const gridY = Math.round(currentY);
+
+            // Check boundaries before drawing
+            if (gridY >= 0 && gridY < GRID_HEIGHT && gridX >= 0 && gridX < GRID_WIDTH) {
+                grid[gridY][gridX] = 1;
+
+                if (isThick) {
+                    // Make the line thicker by plotting an adjacent pixel.
+                    // The direction of thickening depends on the line's angle for a better look.
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        // More horizontal line, so thicken vertically
+                        if (gridY + 1 < GRID_HEIGHT) grid[gridY + 1][gridX] = 1;
+                    } else {
+                        // More vertical line, so thicken horizontally
+                        if (gridX + 1 < GRID_WIDTH) grid[gridY][gridX + 1] = 1;
+                    }
+                }
+            }
+            currentX += xInc;
+            currentY += yInc;
+        }
+    }
+
+
+    /**
+     * Renders a grid of dots onto the canvas based on a 2D array.
+     * @param {number[][]} grid - The 2D array where 1 means draw a dot.
+     */
+    function renderGrid(grid) {
+        // Clear the canvas for the new frame
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Draw inactive background dots first
+        for (let y = 0; y < GRID_HEIGHT; y++) {
+            for (let x = 0; x < GRID_WIDTH; x++) {
+                ctx.beginPath();
+                const canvasX = x * PIXEL_SIZE + PIXEL_SIZE / 2;
+                const canvasY = y * PIXEL_SIZE + PIXEL_SIZE / 2;
+                ctx.fillStyle = "#444";
+                ctx.arc(canvasX, canvasY, DOT_RADIUS * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        // Draw active dots
+        for (let y = 0; y < GRID_HEIGHT; y++) {
+            for (let x = 0; x < GRID_WIDTH; x++) {
+                if (grid[y][x] === 1) {
+                    ctx.beginPath();
+                    const canvasX = x * PIXEL_SIZE + PIXEL_SIZE / 2;
+                    const canvasY = y * PIXEL_SIZE + PIXEL_SIZE / 2;
+                    ctx.fillStyle = DOT_COLOR;
+                    ctx.arc(canvasX, canvasY, DOT_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+    }
+    /**
+     * The main animation loop that updates the clock every frame.
+     */
+    function animate() {
+        const now = new Date();
+        // Use fractional time for smoother hand movements
+        const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+        const minutes = now.getMinutes() + seconds / 60;
+        const hours = now.getHours() + minutes / 60;
+
+        // Create a deep copy of the clock face to draw on for this frame
+        const frameGrid = graphics.clockFace.map(row => [...row]);
+
+        // Calculate angles for each hand in radians.
+        // 0 degrees is at the top of the clock, so we subtract 90 degrees (PI/2).
+        const secondAngle = (seconds / 60) * 2 * Math.PI - Math.PI / 2;
+        const minuteAngle = (minutes / 60) * 2 * Math.PI - Math.PI / 2;
+        const hourAngle = (hours / 12) * 2 * Math.PI - Math.PI / 2;
+
+        // Calculate the end-points of each hand based on angle and length
+        const hourHandEndX = CENTER_X + HOUR_HAND_LENGTH * Math.cos(hourAngle);
+        const hourHandEndY = CENTER_Y + HOUR_HAND_LENGTH * Math.sin(hourAngle);
+        const minuteHandEndX = CENTER_X + MINUTE_HAND_LENGTH * Math.cos(minuteAngle);
+        const minuteHandEndY = CENTER_Y + MINUTE_HAND_LENGTH * Math.sin(minuteAngle);
+        const secondHandEndX = CENTER_X + SECOND_HAND_LENGTH * Math.cos(secondAngle);
+        const secondHandEndY = CENTER_Y + SECOND_HAND_LENGTH * Math.sin(secondAngle);
+
+        // Draw the hands onto our temporary grid data
+        drawLineOnGrid(frameGrid, CENTER_X, CENTER_Y, hourHandEndX, hourHandEndY, true); // Thick hour hand
+        drawLineOnGrid(frameGrid, CENTER_X, CENTER_Y, minuteHandEndX, minuteHandEndY, true); // Thick minute hand
+        drawLineOnGrid(frameGrid, CENTER_X, CENTER_Y, secondHandEndX, secondHandEndY, false); // Thin second hand
+        
+        // Add a central pivot dot to make it look clean
+        const centerXRounded = Math.round(CENTER_X);
+        const centerYRounded = Math.round(CENTER_Y);
+        if(frameGrid[centerYRounded] && frameGrid[centerYRounded][centerXRounded -1]){
+             frameGrid[centerYRounded][centerXRounded] = 1;
+             frameGrid[centerYRounded][centerXRounded -1] = 1;
+        }
+
+        // Render the final combined grid to the canvas
+        renderGrid(frameGrid);
+
+        // Request the next animation frame to keep the clock ticking
+        requestAnimationFrame(animate);
+    }
+
+    // Start the clock!
+    animate();
+</script>
+</html>
