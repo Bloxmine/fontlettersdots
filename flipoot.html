@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Quiz Game</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div id="demoSelection">
+    <button id="demoButton" class="glossy-button button-purple active" onclick="window.location.href='flipoot.html';">Flipoot</button>
+    <button id="demo2Button" class="glossy-button button-green not-active" onclick="window.location.href='clocks.html';">Clock</button>
+    <button id="demo3Button" class="glossy-button button-gold not-active" onclick="window.location.href='letters.html';">Animated letters</button>
+    </div>
+    <div id="quiz-container">
+        <div id="question-display-wrapper">
+            <canvas id="questionCanvas" width="840" height="140"></canvas>
+        </div>
+        
+        <div id="quiz-info">
+            <span id="question-counter">Question 1/5</span>
+            <span id="score">Score: 0</span>
+             <div id="speed-control">
+                <label for="speed-slider">Speed:</label>
+                <input type="range" id="speed-slider" min="0.05" max="1" value="0.2" step="0.1">
+            </div>
+        </div>
+
+        <div id="answer-options">
+            <button class="answer-btn btn-red" data-shape="triangle">
+                <span class="shape-icon" id="triangle-icon">
+                    <svg viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90"/></svg>
+                </span>
+                <span class="answer-text" id="answer-text-0"></span>
+            </button>
+            <button class="answer-btn btn-blue" data-shape="circle">
+                <span class="shape-icon" id="circle-icon">
+                    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>
+                </span>
+                <span class="answer-text" id="answer-text-1"></span>
+            </button>
+            <button class="answer-btn btn-yellow" data-shape="square">
+                <span class="shape-icon" id="square-icon">
+                    <svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80"/></svg>
+                </span>
+                <span class="answer-text" id="answer-text-2"></span>
+            </button>
+            <button class="answer-btn btn-green" data-shape="star">
+                <span class="shape-icon" id="star-icon">
+                    <svg viewBox="0 0 100 100"><polygon points="50,5 61,40 98,40 68,62 79,96 50,75 21,96 32,62 2,40 39,40"/></svg>
+                </span>
+                <span class="answer-text" id="answer-text-3"></span>
+            </button>
+        </div>
+        <div id="controls">
+            <button id="next-btn" class="hidden">Next Question</button>
+        </div>
+    </div>
+
+    <div id="results-container" class="hidden">
+        <h2>Quiz Complete!</h2>
+        <p id="final-score">Your final score is 0 out of 0</p>
+        <button id="restart-btn">Play Again</button>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const quizData = [
+        {
+            question: "WHAT IS THE CAPITAL OF FRANCE?",
+            answers: [
+                { text: "Paris", shape: "triangle" },
+                { text: "London", shape: "circle" },
+                { text: "Berlin", shape: "square" },
+                { text: "Madrid", shape: "star" }
+            ],
+            correctShape: "triangle"
+        },
+        {
+            question: "WHICH PLANET IS KNOWN AS THE RED PLANET?",
+            answers: [
+                { text: "Earth", shape: "triangle" },
+                { text: "Jupiter", shape: "circle" },
+                { text: "Mars", shape: "square" },
+                { text: "Venus", shape: "star" }
+            ],
+            correctShape: "square"
+        },
+        {
+            question: "WHO WROTE 'ROMEO AND JULIET'?",
+            answers: [
+                { text: "Charles Dickens", shape: "triangle" },
+                { text: "William Shakespeare", shape: "circle" },
+                { text: "Jane Austen", shape: "square" },
+                { text: "Mark Twain", shape: "star" }
+            ],
+            correctShape: "circle"
+        },
+        {
+            question: "WHAT IS THE LARGEST OCEAN ON EARTH?",
+            answers: [
+                { text: "Atlantic", shape: "triangle" },
+                { text: "Indian", shape: "circle" },
+                { text: "Arctic", shape: "square" },
+                { text: "Pacific", shape: "star" }
+            ],
+            correctShape: "star"
+        },
+        {
+            question: "WHAT IS H2O?",
+            answers: [
+                { text: "Water", shape: "triangle" },
+                { text: "Oxygen", shape: "circle" },
+                { text: "Salt", shape: "square" },
+                { text: "Hydrogen", shape: "star" }
+            ],
+            correctShape: "triangle"
+        }
+    ];
+
+    // --- CHARACTER DATA ---
+    const characters = {
+        "0":[[1,1,1,1,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,0,1],[1,1,1,1,1]],"1":[[1,1,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1]],"2":[[1,1,1,1,0],[0,0,0,0,1],[1,1,1,1,1],[1,0,0,0,0],[1,1,1,1,1]],"3":[[1,1,1,1,0],[0,0,0,0,1],[1,1,1,1,1],[0,0,0,0,1],[1,1,1,1,1]],"4":[[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,1],[0,0,0,0,1],[0,0,0,0,1]],"5":[[1,1,1,1,1],[1,0,0,0,0],[1,1,1,1,1],[0,0,0,0,1],[1,1,1,1,0]],"6":[[1,1,1,1,0],[1,0,0,0,0],[1,1,1,1,1],[1,0,0,0,1],[1,1,1,1,1]],"7":[[1,1,1,1,1],[0,0,0,0,1],[0,0,0,1,0],[0,0,1,0,0],[0,0,1,0,0]],"8":[[1,1,1,1,0],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[0,1,1,1,1]],"9":[[1,1,1,1,0],[1,0,0,0,1],[1,1,1,1,1],[0,0,0,0,1],[1,1,1,1,1]],"A":[[0,1,1,1,1],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1]],"B":[[1,1,1,1,0],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[1,1,1,1,1]],"C":[[0,1,1,1,1],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],"D":[[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1]],"E":[[1,1,1,1,1],[1,0,0,0,0],[1,1,1,1,0],[1,0,0,0,0],[1,1,1,1,1]],"F":[[1,1,1,1,1],[1,0,0,0,0],[1,1,1,0,0],[1,0,0,0,0],[1,0,0,0,0]],"G":[[0,1,1,1,1],[1,0,0,0,0],[1,0,0,1,1],[1,0,0,0,1],[1,1,1,1,1]],"H":[[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1]],"I":[[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1]],"J":[[0,0,0,0,1],[0,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,1]],"K":[[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1]],"L":[[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],"M":[[0,1,1,1,1],[1,0,1,0,1],[1,0,1,0,1],[1,0,1,0,1],[1,0,0,0,1]],"N":[[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],"O":[[0,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0]],"P":[[1,1,1,1,0],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,0],[1,0,0,0,0]],"Q":[[1,1,1,1,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,1,0],[1,1,1,0,1]],"R":[[1,1,1,1,0],[1,0,0,0,1],[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1]],"S":[[0,1,1,1,1],[1,0,0,0,0],[1,1,1,1,1],[0,0,0,0,1],[1,1,1,1,0]],"T":[[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],"U":[[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0]],"V":[[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0]],"W":[[1,0,0,0,1],[1,0,1,0,1],[1,0,1,0,1],[1,0,1,0,1],[1,1,1,1,0]],"X":[[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1]],"Y":[[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0]],"Z":[[1,1,1,1,1],[0,0,0,0,1],[0,1,1,1,0],[1,0,0,0,0],[1,1,1,1,1]],"?":[[1,1,1,1,1],[0,0,0,0,1],[0,0,1,1,1],[0,0,0,0,0],[0,0,1,0,0]],"!":[[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0]],"(": [[0,0,0,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,1,1]],")":[[1,1,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,0,0,0]],"[":[[0,0,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,1,1]],"]":[[1,1,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,1,0,0]],"{":[[0,0,1,1,1],[0,0,1,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,1,1,1]],"}":[[1,1,1,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[1,1,1,0,0]],",":[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0]],".":[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,0,0,0]],":":[[1,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,0,0,0]],";":[[1,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0]]," ":[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]],"-":[[0,0,0,0,0],[0,0,0,0,0],[1,1,1,1,1],[0,0,0,0,0],[0,0,0,0,0]],"^":[[1,0,0,0,1],[1,0,0,0,1],[0,0,0,0,1],[1,0,0,0,1],[0,1,1,1,1]],"~":[[1,0,1,1,1],[1,0,0,0,1],[1,0,1,1,1],[0,0,0,0,0],[1,0,0,1,0]]
+    };
+
+    // --- Canvas & Grid ---
+    const GRID_WIDTH = 140;
+    const GRID_HEIGHT = 20;
+    const canvas = document.getElementById('questionCanvas');
+    const ctx = canvas.getContext('2d');
+    const PIXEL_SIZE = canvas.width / GRID_WIDTH;
+    const DOT_RADIUS = PIXEL_SIZE * 0.4;
+    const CHAR_WIDTH = 5; // Updated for new font
+    const CHAR_SPACING = 1;
+
+    // --- Animation State ---
+    let textPositionX = GRID_WIDTH;
+    let currentQuestionText = "";
+    let animationFrameId;
+
+    // --- Game State ---
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answerSelected = false;
+
+    // --- DOM Elements ---
+    const quizContainer = document.getElementById('quiz-container');
+    const resultsContainer = document.getElementById('results-container');
+    const questionCounterEl = document.getElementById('question-counter');
+    const scoreEl = document.getElementById('score');
+    const answerButtons = document.querySelectorAll('.answer-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const finalScoreEl = document.getElementById('final-score');
+    const speedSlider = document.getElementById('speed-slider');
+    
+    // --- Functions ---
+    function drawTextOnGrid(grid, text) {
+        const upperText = text.toUpperCase();
+        let currentX = Math.round(textPositionX);
+        const startY = Math.round((GRID_HEIGHT - 5) / 2); // Center text vertically
+
+        for (let i = 0; i < upperText.length; i++) {
+            const char = upperText[i];
+            const charData = characters[char] || characters['?'];
+
+            for (let y = 0; y < charData.length; y++) {
+                for (let x = 0; x < charData[y].length; x++) {
+                    if (charData[y][x] === 1) {
+                        const gridX = currentX + x;
+                        const gridY = startY + y;
+                        if (gridY >= 0 && gridY < GRID_HEIGHT && gridX >= 0 && gridX < GRID_WIDTH) {
+                            grid[gridY][gridX] = 1;
+                        }
+                    }
+                }
+            }
+            currentX += CHAR_WIDTH + CHAR_SPACING;
+        }
+    }
+
+    function renderGrid(grid) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let y = 0; y < GRID_HEIGHT; y++) {
+            for (let x = 0; x < GRID_WIDTH; x++) {
+                ctx.beginPath();
+                const canvasX = x * PIXEL_SIZE + PIXEL_SIZE / 2;
+                const canvasY = y * PIXEL_SIZE + PIXEL_SIZE / 2;
+                if (grid[y][x] === 1) {
+                    ctx.fillStyle = '#e0e0e0';
+                    ctx.arc(canvasX, canvasY, DOT_RADIUS, 0, Math.PI * 2);
+                } else {
+                    ctx.fillStyle = "#333";
+                    ctx.arc(canvasX, canvasY, DOT_RADIUS * 0.5, 0, Math.PI * 2);
+                }
+                ctx.fill();
+            }
+        }
+    }
+    
+    function createGrid() {
+        const grid = [];
+        for (let y = 0; y < GRID_HEIGHT; y++) {
+            grid[y] = Array(GRID_WIDTH).fill(0);
+        }
+        return grid;
+    }
+
+    function animate() {
+        const speed = parseFloat(speedSlider.value);
+        const grid = createGrid();
+
+        const textWidth = currentQuestionText.length * (CHAR_WIDTH + CHAR_SPACING);
+        textPositionX -= speed;
+        if (textPositionX < -textWidth) {
+            textPositionX = GRID_WIDTH;
+        }
+
+        drawTextOnGrid(grid, currentQuestionText);
+        renderGrid(grid);
+        animationFrameId = requestAnimationFrame(animate);
+    }
+    
+    function startAnimation(text) {
+        currentQuestionText = "   " + text + "   "; // Add padding for scrolling
+        textPositionX = GRID_WIDTH;
+        if(animationFrameId) cancelAnimationFrame(animationFrameId);
+        animate();
+    }
+
+    function loadQuestion() {
+        answerSelected = false;
+        const questionData = quizData[currentQuestionIndex];
+        
+        startAnimation(questionData.question);
+
+        questionCounterEl.textContent = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
+        scoreEl.textContent = `Score: ${score}`;
+        
+        questionData.answers.forEach((answer, index) => {
+            document.getElementById(`answer-text-${index}`).textContent = answer.text;
+            const button = document.querySelector(`[data-shape="${answer.shape}"]`);
+            if (button) {
+                 button.className = 'answer-btn'; // Reset classes
+                 if(answer.shape === 'triangle') button.classList.add('btn-red');
+                 if(answer.shape === 'circle') button.classList.add('btn-blue');
+                 if(answer.shape === 'square') button.classList.add('btn-yellow');
+                 if(answer.shape === 'star') button.classList.add('btn-green');
+                 button.disabled = false;
+            }
+        });
+        
+        nextBtn.classList.add('hidden');
+    }
+
+    function selectAnswer(e) {
+        if(answerSelected) return;
+        answerSelected = true;
+
+        const selectedBtn = e.currentTarget;
+        const selectedShape = selectedBtn.dataset.shape;
+        const correctShape = quizData[currentQuestionIndex].correctShape;
+
+        if (selectedShape === correctShape) {
+            score++;
+            selectedBtn.classList.add('correct');
+        } else {
+            selectedBtn.classList.add('incorrect');
+            const correctBtn = document.querySelector(`[data-shape="${correctShape}"]`);
+            correctBtn.classList.add('correct');
+        }
+
+        scoreEl.textContent = `Score: ${score}`;
+        answerButtons.forEach(btn => btn.disabled = true);
+        nextBtn.classList.remove('hidden');
+    }
+    
+    function showResults() {
+        quizContainer.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+        finalScoreEl.textContent = `Your final score is ${score} out of ${quizData.length}`;
+        if(animationFrameId) cancelAnimationFrame(animationFrameId);
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+    
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        resultsContainer.classList.add('hidden');
+        quizContainer.classList.remove('hidden');
+        loadQuestion();
+    }
+    
+    // Event Listeners
+    answerButtons.forEach(button => {
+        button.addEventListener('click', selectAnswer);
+    });
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', restartQuiz);
+
+    // Initial load
+    loadQuestion();
+});
+</script>
+</body>
+</html>
+
